@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<configuration>
+
+<!-- Metastore Configuration: -->
+  <property>
+    <name>hive.metastore.db.type</name>
+    <value>postgres</value>
+    <description>
+    Specifies the type of database used by the Hive metastore. 
+    In this case, PostgreSQL is being used as the backend database
+    to store Hive's metadata including table schemas, partitions, etc.
+    </description>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:postgresql://postgres:5432/metastore</value>
+    <description>
+    JDBC connection string for the data store which contains metadata
+
+    JDBC connection URL for the metastore database.
+    Points to a PostgreSQL server running in a container named 'postgres'
+    on port 5432, with database name 'metastore'.
+    </description>
+  </property>
+
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>org.postgresql.Driver</value>
+    <description>
+    The JDBC driver class name for PostgreSQL.
+    This tells Hive which JDBC driver to use to connect to the metastore database.
+    </description>
+  </property>
+
+  <property>
+      <name>javax.jdo.option.ConnectionUserName</name>
+      <value>hive</value>
+  </property>
+
+  <property>
+      <name>javax.jdo.option.ConnectionPassword</name>
+      <value>hive</value>
+  </property>
+
+<!-- ACID Transaction Support -->
+<property>
+  <name>hive.support.concurrency</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.txn.manager</name>
+  <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
+</property>
+<property>
+  <name>hive.enforce.bucketing</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.exec.dynamic.partition.mode</name>
+  <value>nonstrict</value>
+</property>
+
+
+<!-- Execution Engine -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>tez</value>
+    <description>
+    Specifies the execution engine Hive should use.
+    'tez' is more performant than the traditional 'mr' (MapReduce) engine,
+    supporting optimized query execution plans and reduced latency.
+    </description>
+  </property>
+
+  <!-- Compaction (Helps manage ACID table performance) -->
+<property>
+  <name>metastore.compactor.initiator.on</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>metastore.compactor.cleaner.on</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>metastore.compactor.worker.threads</name>
+  <value>1</value>
+</property>
+
+
+<!-- Web UI (Useful for monitoring) -->
+<property>
+  <name>hive.server2.webui.enable</name>
+  <value>true</value>
+</property>
+
+  <property>
+    <name>hive.server2.enable.doAs</name>
+    <value>false</value>
+    <description>
+    Controls whether HiveServer2 executes queries as the connected user (true)
+    or as the HiveServer2 service account (false).
+    Setting to false simplifies permissions in development environments.
+    </description>
+  </property>
+
+<property>
+  <name>hive.server2.webui.port</name>
+  <value>10002</value>
+</property>
+<property>
+  <name>hive.server2.thrift.port</name>
+  <value>10000</value>
+  <description>The port on which HiveServer2 will listen for Thrift connections</description>
+</property>
+
+</configuration>
