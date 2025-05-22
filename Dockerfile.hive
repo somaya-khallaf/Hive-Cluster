@@ -1,0 +1,39 @@
+# Dockerfile.hive
+FROM hadoop-cluster:latest
+
+ARG HIVE_VERSION=4.0.1
+ARG POSTGRES_JDBC_VERSION=42.6.0
+ARG TEZ_VERSION=0.10.4
+
+ADD https://archive.apache.org/dist/hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz /tmp/
+RUN sudo tar -xzf /tmp/apache-hive-${HIVE_VERSION}-bin.tar.gz -C /usr/local/ && \
+    sudo mv /usr/local/apache-hive-${HIVE_VERSION}-bin /usr/local/hive && \
+    sudo rm -f /tmp/apache-hive-${HIVE_VERSION}-bin.tar.gz
+
+
+ADD https://archive.apache.org/dist/tez/${TEZ_VERSION}/apache-tez-${TEZ_VERSION}-bin.tar.gz /tmp/
+RUN sudo tar -xzf /tmp/apache-tez-${TEZ_VERSION}-bin.tar.gz -C /usr/local/ && \
+    sudo mv /usr/local/apache-tez-${TEZ_VERSION}-bin /usr/local/tez && \
+    sudo rm -f /tmp/apache-tez-${TEZ_VERSION}-bin.tar.gz 
+
+ADD https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_VERSION}.jar /usr/local/hive/lib/ 
+# COPY --chown=hadoop:hadoop ./postgresql-${POSTGRES_JDBC_VERSION}.jar /home/hadoop/hive/lib/
+RUN sudo chmod 777 /usr/local/hive/lib/postgresql-${POSTGRES_JDBC_VERSION}.jar
+
+ENV HIVE_HOME=/usr/local/hive 
+ENV HIVE_CONF_DIR=/usr/local/hive/conf 
+ENV TEZ_HOME=/usr/local/tez
+ENV TEZ_CONF_DIR=/usr/local/tez/conf
+ENV PATH=$PATH:$HIVE_HOME/bin:$TEZ_HOME/bin
+ENV HADOOP_CLASSPATH=${TEZ_HOME}/*:${TEZ_HOME}/lib/*
+
+RUN sudo mkdir -p /usr/local/hive/data /usr/local/hive/tmp && \
+    sudo chown -R hadoop:hadoop /usr/local/hive /usr/local/tez && \
+    sudo chmod -R 777 /usr/local/hive /usr/local/tez
+
+COPY config/tez/*.xml $TEZ_CONF_DIR/
+COPY config/hive/*.xml $HIVE_CONF_DIR/
+COPY ./scripts/hive_entrypoint.sh /usr/local/scripts/
+RUN sudo chmod +x /usr/local/scripts/hive_entrypoint.sh
+
+ENTRYPOINT ["/usr/local/scripts/hive_entrypoint.sh"]
